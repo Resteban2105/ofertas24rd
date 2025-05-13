@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ofertas24 RD - Tienda de Celulares</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+</head>
+<body class="bg-gray-50 font-inter text-gray-800">
+
+  <!-- Header -->
+  <header class="bg-gradient-to-r from-purple-600 to-indigo-600 text-white sticky top-0 z-50 shadow-md">
+    <div class="container mx-auto px-6 py-4 flex justify-between items-center">
+      <h1 class="text-3xl font-bold">Ofertas24 RD <i class="fas fa-mobile-alt ml-2"></i></h1>
+      <div class="flex items-center">
+        <button id="cartButton" class="relative mr-4 focus:outline-none">
+          <i class="fas fa-shopping-cart text-2xl"></i>
+          <span id="cart-count" class="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-5 w-5 flex items-center justify-center">0</span>
+        </button>
+        <a href="https://wa.me/8493756956" target="_blank" class="bg-green-500 hover:bg-green-600 text-white font-semibold px-4 py-2 rounded-lg shadow-md transition">WhatsApp</a>
+      </div>
+    </div>
+  </header>
+
+  <!-- Hero -->
+  <section class="bg-white py-16">
+    <div class="container mx-auto px-6 text-center">
+      <h2 class="text-4xl font-bold mb-4">¡Bienvenido a Ofertas24 RD!</h2>
+      <p class="text-lg mb-8 text-gray-600">Encuentra los mejores celulares al mejor precio en República Dominicana.</p>
+      <button id="openCatalogButton" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-3 px-8 rounded-full shadow-lg transition transform hover:scale-105">
+        <i class="fas fa-book-open mr-2"></i> Ver Catálogo
+      </button>
+    </div>
+  </section>
+
+  <!-- Modals -->
+  <div id="catalogModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl w-full max-w-5xl overflow-hidden">
+      <div class="flex justify-between items-center p-6 border-b">
+        <h2 class="text-2xl font-bold">Catálogo de Celulares</h2>
+        <button id="closeCatalogButton" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
+      </div>
+      <div id="productGrid" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 p-6 max-h-[70vh] overflow-y-auto"></div>
+    </div>
+  </div>
+
+  <div id="cartModal" class="fixed inset-0 bg-black bg-opacity-50 hidden items-center justify-center p-4">
+    <div class="bg-white rounded-2xl w-full max-w-3xl overflow-hidden">
+      <div class="flex justify-between items-center p-6 border-b">
+        <h2 class="text-2xl font-bold">Tu Carrito <i class="fas fa-cart-arrow-down ml-2"></i></h2>
+        <button id="closeCartButton" class="text-gray-500 hover:text-gray-800 text-2xl">&times;</button>
+      </div>
+      <div id="cartItemsContainer" class="p-6 max-h-[50vh] overflow-y-auto"></div>
+      <div class="p-6 border-t">
+        <div class="flex justify-between items-center mb-4">
+          <span class="text-xl font-semibold">Total:</span>
+          <span id="cartTotal" class="text-xl font-bold text-purple-600">RD$0.00</span>
+        </div>
+        <button id="checkoutButton" class="w-full bg-green-500 hover:bg-green-600 text-white py-3 rounded-full font-bold transition disabled:opacity-50" disabled>
+          Proceder al Pago
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <footer class="bg-gray-800 text-gray-300 py-8 mt-12 text-center">
+    <p>&copy; <span id="currentYear"></span> Ofertas24 RD. Todos los derechos reservados.</p>
+  </footer>
+
+  <script>
+    document.getElementById('currentYear').textContent = new Date().getFullYear();
+
+    const products = [
+      { id: 1, name: 'Redmi Note 13 Pro', price: 15000, imageUrl: 'https://fdn.gsmarena.com/imgroot/reviews/24/redmi-note-13-pro-plus/inline/-1200/gsmarena_001.jpg' },
+      { id: 2, name: 'Redmi Note 12 Pro', price: 16520, imageUrl: 'https://fdn.gsmarena.com/imgroot/news/23/01/xiaomi-redmi-note-12-series-india-price-sale-date/popup/-1200x900m/gsmarena_002.jpg' },
+      { id: 3, name: 'Redmi Note 11 Pro', price: 12500, imageUrl: 'https://fdn.gsmarena.com/imgroot/news/22/03/xiaomi-redmi-note-11-pro-india-sale/inline/-1200x500m/gsmarena_001.jpg' },
+      { id: 4, name: 'Samsung Galaxy A32', price: 6495, imageUrl: 'https://fdn.gsmarena.com/imgroot/news/21/01/samsung-galaxy-a32-5g-press-renders/-1200x650m/gsmarena_001.jpg' },
+      { id: 5, name: 'Tecno Spark 20 Pro', price: 8900, imageUrl: 'https://fdn2.gsmarena.com/vv/pics/tecno/tecno-spark-20-pro-2.jpg' },
+      { id: 6, name: 'Tecno Spark 20', price: 6750, imageUrl: 'https://fdn2.gsmarena.com/vv/pics/tecno/tecno-spark-20-2.jpg' }
+    ];
+
+    let cart = [];
+
+    function renderProducts() {
+      const grid = document.getElementById('productGrid'); grid.innerHTML = '';
+      products.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'bg-white rounded-xl shadow-lg p-4 flex flex-col';
+        card.innerHTML = `
+          <img src="${p.imageUrl}" alt="${p.name}" class="h-48 object-contain mb-4 rounded">
+          <h3 class="text-xl font-semibold mb-2">${p.name}</h3>
+          <div class="mt-auto flex items-center justify-between">
+            <span class="text-xl font-bold text-purple-600">RD\$${p.price.toLocaleString('es-DO')}</span>
+            <button onclick="addToCart(${p.id})" class="bg-green-500 hover:bg-green-600 text-white px-4 py-2 rounded-full">
+              <i class="fas fa-cart-plus"></i>
+            </button>
+          </div>`;
+        grid.appendChild(card);
+      });
+    }
+
+    function addToCart(id) {
+      const prod = products.find(x => x.id === id);
+      const item = cart.find(x => x.id === id);
+      if (item) item.qty++; else cart.push({ ...prod, qty: 1 });
+      updateCart();
+      document.getElementById('catalogModal').classList.add('hidden');
+    }
+
+    function updateCart() {
+      const cont = document.getElementById('cartItemsContainer'); cont.innerHTML = '';
+      let total = 0, count = 0;
+      cart.forEach(i => { total += i.price * i.qty; count += i.qty; });
+      if (!cart.length) cont.innerHTML = '<p class="text-center text-gray-500">Carrito vacío.</p>';
+      else cart.forEach(i => {
+        const row = document.createElement('div');
+        row.className = 'flex items-center justify-between py-2 border-b';
+        row.innerHTML = `<span>${i.name} x${i.qty}</span><span>RD\$${(i.price*i.qty).toLocaleString('es-DO')}</span>`;
+        cont.appendChild(row);
+      });
+      document.getElementById('cart-count').textContent = count;
+      document.getElementById('cartTotal').textContent = `RD\$${total.toLocaleString('es-DO')}`;
+      document.getElementById('checkoutButton').disabled = !cart.length;
+    }
+
+    document.getElementById('openCatalogButton').onclick = () => { document.getElementById('catalogModal').classList.remove('hidden'); renderProducts(); };
+    document.getElementById('closeCatalogButton').onclick = () => document.getElementById('catalogModal').classList.add('hidden');
+    document.getElementById('cartButton').onclick = () => { document.getElementById('cartModal').classList.remove('hidden'); updateCart(); };
+    document.getElementById('closeCartButton').onclick = () => document.getElementById('cartModal').classList.add('hidden');
+
+    document.getElementById('checkoutButton').onclick = () => {
+      const waMsg = cart.map(i => `${i.name} x${i.qty}`).join('%0A');
+      window.open(`https://wa.me/8493756956?text=Pedido:%0A${waMsg}`, '_blank');
+      alert('Artículo en proceso, contactar vía WhatsApp');
+      cart = [];
+      updateCart();
+      document.getElementById('cartModal').classList.add('hidden');
+      document.getElementById('catalogModal').classList.add('hidden');
+    };
+
+    window.onclick = e => {
+      if (e.target === document.getElementById('catalogModal')) document.getElementById('catalogModal').classList.add('hidden');
+      if (e.target === document.getElementById('cartModal')) document.getElementById('cartModal').classList.add('hidden');
+    };
+  </script>
+</body>
+</html>
+
